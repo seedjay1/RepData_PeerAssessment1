@@ -1,10 +1,12 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: "Christopher Jones"
 output: 
-  html_document:
-    keep_md: true
+html_document:
+keep_md: true
 ---
 
+## another change
 
 ## Loading and preprocessing the data
 
