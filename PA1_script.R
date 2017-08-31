@@ -26,3 +26,5 @@ data.complete <- data.raw[!is.na(data.raw$steps),]
 # use the standard package for imputing values
 library(mice)
 
+# this is a change
+
