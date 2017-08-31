@@ -10,5 +10,19 @@ if (!file.exists(filename)) {
   unlink("temp.zip")
 }
 
-data_raw <- read.csv(filename, header=TRUE)
+
+data.raw <- read.csv(filename, header=TRUE)
+data.raw$id <- seq(1:nrow(data.raw))
+
+data.complete <- data.raw[!is.na(data.raw$steps),]
+
+# > md.pattern(data.raw)
+#         date interval id steps     
+# 15264      1        1  1     1    0
+# 2304       1        1  1     0    1
+#            0        0  0  2304 2304
+
+
+# use the standard package for imputing values
+library(mice)
 
