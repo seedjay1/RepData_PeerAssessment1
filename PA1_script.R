@@ -1,5 +1,9 @@
 # script to perform the PA actions
 
+# =======================
+# Data load/preprocessing
+# =======================
+
 # download data if it isn't already in place in current directory
 filename <- "activity.csv"
 zipurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -10,13 +14,16 @@ if (!file.exists(filename)) {
   unlink("temp.zip")
 }
 
+# pre-preprocessing
 data.raw <- read.csv(filename, header=TRUE)
 
 data.proc <- data.raw
 data.proc$id <- seq(1:nrow(data.proc))
 data.proc$date <- as.Date(data.proc$date)
 data.proc$dow <- weekdays(data.proc$date, abbreviate=TRUE)
+data.proc$dow <- as.factor(data.proc$dow)
 data.proc.complete <- data.proc[!is.na(data.proc$steps),]
+
 
 # =================================================
 # What is mean total number of steps taken per day?
@@ -25,8 +32,12 @@ data.proc.complete <- data.proc[!is.na(data.proc$steps),]
 # If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
 # Calculate and report the mean and median of the total number of steps taken per day
 # =================================================
+
+# set up the data
 stepsperday <- aggregate(data.proc.complete$steps, by=list(data.proc.complete$date), FUN=sum)
 names(stepsperday) <- c("date", "steps")
+
+# construct the raw plot
 par(bg = "grey")
 hist(stepsperday$steps, breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = "cornflowerblue")
 axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
@@ -50,8 +61,9 @@ box()
 # Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 # Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 # ==========================================
-library(TTR) # for exponentially weighted moving average
+library(TTR) # for exponentially weighted moving average (higher weight to more recent observations)
 
+# set up the data
 avgstepsperinterval <- aggregate(data.proc.complete$steps, by=list(data.proc.complete$interval), FUN=mean)
 names(avgstepsperinterval) <- c("interval", "avg_steps")
 avgstepsperinterval$expMA <- EMA(avgstepsperinterval$avg_steps)
@@ -60,6 +72,8 @@ themean <- mean(avgstepsperinterval$avg_steps)
 themax <- max(avgstepsperinterval$avg_steps)
 themaxpre <- avgstepsperinterval$interval[avgstepsperinterval$avg_steps == themax]
 thesd <- sd(avgstepsperinterval$avg_steps)
+
+# construct the plot
 plot.new()
 plot(avgstepsperinterval$interval, avgstepsperinterval$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
 axis(1, at=seq(0, 3500, 100), cex.axis =.75)
@@ -75,6 +89,7 @@ text(x=1.05 * themaxpre
      , adj = c(0,0)
      , cex=.75)
 title(main="Average Steps Per Day, By Time Interval")
+mtext("(with exponential moving average smoothing)")
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval$interval, y=avgstepsperinterval$expMA, type="l", col="brown1")
@@ -82,18 +97,95 @@ rect(xleft=0, xright=750, ybottom=160, ytop=205)
 legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "brown1"), lty=c(1, 1), cex=0.8, bty="n")
 
 
+# =======================
+# Imputing missing values
+# Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+# Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+# Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+# Create a new dataset that is equal to the original dataset but with the missing data filled in.
+# Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
+# Do these values differ from the estimates from the first part of the assignment? 
+# What is the impact of imputing missing data on the estimates of the total daily number of steps?
+# ======================
 
-#data.complete <- data.raw[!is.na(data.raw$steps),]
 
+# use the standard package for imputing the missing steps values
+library(mice)
+
+# NA analysis
 # > md.pattern(data.raw)
 #         date interval id steps     
 # 15264      1        1  1     1    0
-# 2304       1        1  1     0    1
+#  2304      1        1  1     0    1
 #            0        0  0  2304 2304
 
+if(nrow(data.proc.imputed) != 17568) {
+  tempData <- mice(data.raw, m=5, maxit=50, meth="norm", seed=500)
+  data.proc.imputed <- complete(tempData, 1)
+  data.proc.imputed$id <- seq(1:nrow(data.proc.imputed))
+  data.proc.imputed$date <- as.Date(data.proc.imputed$date)
+  data.proc.imputed$dow <- weekdays(data.proc.imputed$date, abbreviate=TRUE)
+  data.proc.imputed$dow <- as.factor(data.proc.imputed$dow)
+}
 
-# use the standard package for imputing values
-library(mice)
+# set up the imputed data
+stepsperday.imputed <- aggregate(data.proc.imputed$steps, by=list(data.proc.imputed$date), FUN=sum)
+names(stepsperday.imputed) <- c("date", "steps")
+
+# verify we've at least nominally resolved the NA problem
+nrow(data.proc.imputed[is.na(data.proc.imputed),])
 
 
+# construct the raw plot
+col.raw <- "firebrick4"
+col.imputed <- "dodgerblue1"
+col.imputed.alpha <- .4
+myrgb <- col2rgb(col.imputed)/256 * col.imputed.alpha + col2rgb(col.raw)/256 * (1 - col.imputed.alpha)
+col.mixed <- rgb(myrgb[1], myrgb[2], myrgb[3], 1)
 
+par(bg = "grey")
+hist(stepsperday$steps, ylim=c(0, 20), breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = col.raw)
+axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
+box()
+
+# construct imputed plot
+par(bg = "grey")
+hist(stepsperday.imputed$steps, ylim=c(0, 20), breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = rgb(col2rgb(col.imputed)[1]/256, col2rgb(col.imputed)[2]/256, col2rgb(col.imputed)[3]/256, col.imputed.alpha), add=TRUE)
+axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
+title(main="Total Steps Per Day, Raw & Imputed", line=2.5)
+bq1 <- bquote("Raw: "
+              ~ mu 
+              ~ "=" 
+              ~ .(format(round(mean(stepsperday$steps), digits=2), big.mark=","))
+              ~ ", " 
+              ~ sigma 
+              ~ "=" 
+              ~ .(format(round(sd(stepsperday$steps), digits=2), big.mark = ","))
+              ~ ", median ="
+              ~ .(format(median(stepsperday$steps), big.mark = ","))
+)
+
+bq2 <- bquote("Imputed: "
+              ~ mu 
+              ~ "=" 
+              ~ .(format(round(mean(stepsperday.imputed$steps), digits=2), big.mark=","))
+              ~ ", " 
+              ~ sigma 
+              ~ "=" 
+              ~ .(format(round(sd(stepsperday.imputed$steps), digits=2), big.mark = ",", digits = 6))
+              ~ ", median ="
+              ~ .(format(median(stepsperday.imputed$steps), big.mark = ","))
+)
+
+mytext <- list(bq2, bq1)
+mtext(do.call(expression, mytext),side=3,line=0:1, cex=.75)
+legend(19000, 20, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed, col.mixed), cex=0.75, pch=c(22, 22, 22), pt.bg = c(col.raw, col.imputed, col.mixed))
+box()
+
+
+# ======================
+# Are there differences in activity patterns between weekdays and weekends?
+# For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+# Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+# Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+# ======================
