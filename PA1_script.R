@@ -120,7 +120,7 @@ library(mice)
 #            0        0  0  2304 2304
 
 if(nrow(data.proc.imputed) != 17568) {
-  tempData <- mice(data.raw, m=5, maxit=50, meth="norm", seed=500)
+  tempData <- mice(data.raw, m=5, maxit=50, meth="pmm", seed=500)
   data.proc.imputed <- complete(tempData, 1)
   data.proc.imputed$id <- seq(1:nrow(data.proc.imputed))
   data.proc.imputed$date <- as.Date(data.proc.imputed$date)
@@ -133,10 +133,11 @@ stepsperday.imputed <- aggregate(data.proc.imputed$steps, by=list(data.proc.impu
 names(stepsperday.imputed) <- c("date", "steps")
 
 # verify we've at least nominally resolved the NA problem
-nrow(data.proc.imputed[is.na(data.proc.imputed),])
-
+# > nrow(data.proc.imputed[is.na(data.proc.imputed),])
+# [1] 0
 
 # construct the raw plot
+plot.new()
 col.raw <- "firebrick4"
 col.imputed <- "dodgerblue1"
 col.imputed.alpha <- .4
@@ -145,41 +146,48 @@ col.mixed <- rgb(myrgb[1], myrgb[2], myrgb[3], 1)
 
 par(bg = "grey")
 hist(stepsperday$steps, ylim=c(0, 20), breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = col.raw)
+rug(stepsperday$steps, side=1, col=col.raw)
 axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
 box()
 
 # construct imputed plot
 par(bg = "grey")
 hist(stepsperday.imputed$steps, ylim=c(0, 20), breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = rgb(col2rgb(col.imputed)[1]/256, col2rgb(col.imputed)[2]/256, col2rgb(col.imputed)[3]/256, col.imputed.alpha), add=TRUE)
+rug(stepsperday.imputed$steps, side=3, col=col.imputed)
 axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
 title(main="Total Steps Per Day, Raw & Imputed", line=2.5)
-bq1 <- bquote("Raw: "
-              ~ mu 
+
+data1 <- "      Raw:"
+data2 <- "Imputed:"
+mytext1 <- list(data2, data1)
+mtext(do.call(expression, mytext1), side=3, line=0:1, adj=c(.23, .23), cex=.75)
+
+bq1 <- bquote("  " ~ mu 
               ~ "=" 
               ~ .(format(round(mean(stepsperday$steps), digits=2), big.mark=","))
-              ~ ", " 
+              ~ " " 
               ~ sigma 
               ~ "=" 
               ~ .(format(round(sd(stepsperday$steps), digits=2), big.mark = ","))
-              ~ ", median ="
+              ~ " median ="
               ~ .(format(median(stepsperday$steps), big.mark = ","))
 )
 
-bq2 <- bquote("Imputed: "
-              ~ mu 
+bq2 <- bquote("   " ~ mu 
               ~ "=" 
               ~ .(format(round(mean(stepsperday.imputed$steps), digits=2), big.mark=","))
-              ~ ", " 
+              ~ " " 
               ~ sigma 
               ~ "=" 
               ~ .(format(round(sd(stepsperday.imputed$steps), digits=2), big.mark = ",", digits = 6))
-              ~ ", median ="
+              ~ "   median ="
               ~ .(format(median(stepsperday.imputed$steps), big.mark = ","))
 )
 
 mytext <- list(bq2, bq1)
-mtext(do.call(expression, mytext),side=3,line=0:1, cex=.75)
-legend(19000, 20, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed, col.mixed), cex=0.75, pch=c(22, 22, 22), pt.bg = c(col.raw, col.imputed, col.mixed))
+mtext(do.call(expression, mytext), side=3, line=0:1, adj=c(.6, .6), cex=.75)
+
+legend(19000, 18, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed, col.mixed), cex=0.75, pch=c(22, 22, 22), pt.bg = c(col.raw, col.imputed, col.mixed))
 box()
 
 
