@@ -93,8 +93,8 @@ mtext("(with exponential moving average smoothing)")
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval$interval, y=avgstepsperinterval$expMA, type="l", col="brown1")
-rect(xleft=0, xright=750, ybottom=160, ytop=205)
-legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "brown1"), lty=c(1, 1), cex=0.8, bty="n")
+rect(xleft=0, xright=650, ybottom=170, ytop=205)
+legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "brown1"), lty=c(1, 1), cex=0.7, bty="n")
 
 
 # =======================
@@ -107,7 +107,6 @@ legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "
 # Do these values differ from the estimates from the first part of the assignment? 
 # What is the impact of imputing missing data on the estimates of the total daily number of steps?
 # ======================
-
 
 # use the standard package for imputing the missing steps values
 library(mice)
@@ -197,3 +196,76 @@ box()
 # Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 # Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 # ======================
+
+library(TTR) # for exponentially weighted moving average (higher weight to more recent observations)
+
+# set up the data
+weekdays <- c("Mon", "Tue", "Wed", "Thu", "Fri")
+weekends <- c("Sat", "Sun")
+
+# Weekdays data aggregation
+avgstepsperinterval.wkdys <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekdays,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekdays,]$interval), FUN=mean)
+names(avgstepsperinterval.wkdys) <- c("interval", "avg_steps")
+avgstepsperinterval.wkdys$expMA <- EMA(avgstepsperinterval.wkdys$avg_steps)
+
+themean.wkdys <- mean(avgstepsperinterval.wkdys$avg_steps)
+themax.wkdys <- max(avgstepsperinterval.wkdys$avg_steps)
+themaxpre.wkdys <- avgstepsperinterval.wkdys$interval[avgstepsperinterval.wkdys$avg_steps == themax.wkdys]
+thesd.wkdys <- sd(avgstepsperinterval.wkdys$avg_steps)
+
+# Weekends data aggregation
+avgstepsperinterval.wkends <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekends,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekends,]$interval), FUN=mean)
+names(avgstepsperinterval.wkends) <- c("interval", "avg_steps")
+avgstepsperinterval.wkends$expMA <- EMA(avgstepsperinterval.wkends$avg_steps)
+
+themean.wkends <- mean(avgstepsperinterval.wkends$avg_steps)
+themax.wkends <- max(avgstepsperinterval.wkends$avg_steps)
+themaxpre.wkends <- avgstepsperinterval.wkends$interval[avgstepsperinterval.wkends$avg_steps == themax.wkends]
+thesd.wkends <- sd(avgstepsperinterval.wkends$avg_steps)
+
+# construct the plots
+plot.new()
+par(mfrow=c(2,1))
+
+# Weekdays
+plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
+axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+points(x=themaxpre.wkdys, y=themax.wkdys, pch=19, col="forestgreen")
+text(x=1.05 * themaxpre.wkdys
+     , y=.99 * themax.wkdys
+     , labels=bquote("maximum: (interval, avg steps) = (" 
+                     ~ .(themaxpre.wkdys)
+                     ~ ", " 
+                     ~ .(round(x=themax.wkdys, digits=2))
+                     ~ ")" 
+     )
+     , adj = c(0,0)
+     , cex=.75)
+#title(main="Weekday")
+#mtext("(with exponential moving average smoothing)")
+
+# add exponential moving average line for some smoothing visualization
+lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, type="l", col="brown1")
+
+
+# Weekends
+plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
+axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
+text(x=1.05 * themaxpre.wkends
+     , y=.99 * themax.wkends
+     , labels=bquote("maximum: (interval, avg steps) = (" 
+                     ~ .(themaxpre.wkends)
+                     ~ ", " 
+                     ~ .(round(x=themax.wkends, digits=2))
+                     ~ ")" 
+     )
+     , adj = c(0,0)
+     , cex=.75)
+#title(main="Weekend")
+#mtext("(with exponential moving average smoothing)")
+
+# add exponential moving average line for some smoothing visualization
+lines(x=avgstepsperinterval.wkends$interval, y=avgstepsperinterval.wkends$expMA, type="l", col="brown1")
+
+mtext("Average Steps/Day, By Time Intervale", outer=TRUE, cex=1.5)
