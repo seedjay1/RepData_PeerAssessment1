@@ -224,12 +224,15 @@ themaxpre.wkends <- avgstepsperinterval.wkends$interval[avgstepsperinterval.wken
 thesd.wkends <- sd(avgstepsperinterval.wkends$avg_steps)
 
 # construct the plots
+dev.off()
 plot.new()
-par(mfrow=c(2,1))
+layout(matrix(c(1, 2), 2, 2, byrow = FALSE))
+par(bg = "grey", mar = c(4, 4, 0.2, 0.2))
 
 # Weekdays
-plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
-axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="", ylab="Avg. Daily Steps")
+#axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkdys, y=themax.wkdys, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkdys
      , y=.99 * themax.wkdys
@@ -241,16 +244,16 @@ text(x=1.05 * themaxpre.wkdys
      )
      , adj = c(0,0)
      , cex=.75)
-#title(main="Weekday")
-#mtext("(with exponential moving average smoothing)")
+text(x=0, y=225, labels="Weekday", cex=1, adj=c(0,0))
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, type="l", col="brown1")
 
 
 # Weekends
-plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
+plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
 axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkends
      , y=.99 * themax.wkends
@@ -262,10 +265,9 @@ text(x=1.05 * themaxpre.wkends
      )
      , adj = c(0,0)
      , cex=.75)
-#title(main="Weekend")
-#mtext("(with exponential moving average smoothing)")
+text(x=0, y=225, labels="Weekend", cex=1, adj=c(0,0))
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval.wkends$interval, y=avgstepsperinterval.wkends$expMA, type="l", col="brown1")
 
-mtext("Average Steps/Day, By Time Intervale", outer=TRUE, cex=1.5)
+mtext("Average Steps/Day, By Time Interval", outer=TRUE, cex=1)
