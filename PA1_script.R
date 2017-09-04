@@ -38,6 +38,8 @@ stepsperday <- aggregate(data.proc.complete$steps, by=list(data.proc.complete$da
 names(stepsperday) <- c("date", "steps")
 
 # construct the raw plot
+dev.off()
+plot.new()
 par(bg = "grey")
 hist(stepsperday$steps, breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = "cornflowerblue")
 axis(1, at=seq(0, 25000, 5000), cex.axis =.75)
@@ -118,6 +120,14 @@ library(mice)
 #  2304      1        1  1     0    1
 #            0        0  0  2304 2304
 
+if(!exists("data.proc.imputed")) {
+  tempData <- mice(data.raw, m=5, maxit=50, meth="pmm", seed=500)
+  data.proc.imputed <- complete(tempData, 1)
+  data.proc.imputed$id <- seq(1:nrow(data.proc.imputed))
+  data.proc.imputed$date <- as.Date(data.proc.imputed$date)
+  data.proc.imputed$dow <- weekdays(data.proc.imputed$date, abbreviate=TRUE)
+  data.proc.imputed$dow <- as.factor(data.proc.imputed$dow)
+}
 if(nrow(data.proc.imputed) != 17568) {
   tempData <- mice(data.raw, m=5, maxit=50, meth="pmm", seed=500)
   data.proc.imputed <- complete(tempData, 1)
@@ -126,6 +136,7 @@ if(nrow(data.proc.imputed) != 17568) {
   data.proc.imputed$dow <- weekdays(data.proc.imputed$date, abbreviate=TRUE)
   data.proc.imputed$dow <- as.factor(data.proc.imputed$dow)
 }
+
 
 # set up the imputed data
 stepsperday.imputed <- aggregate(data.proc.imputed$steps, by=list(data.proc.imputed$date), FUN=sum)
@@ -226,8 +237,10 @@ thesd.wkends <- sd(avgstepsperinterval.wkends$avg_steps)
 # construct the plots
 dev.off()
 plot.new()
-layout(matrix(c(1, 2), 2, 2, byrow = FALSE))
-par(bg = "grey", mar = c(4, 4, 0.2, 0.2))
+layout(matrix(c(1,2), 2, 2, byrow=FALSE), widths=c(1,1), heights=c(4,4))
+par(bg = "grey")
+par(oma=c(3,3,3,3))  # all sides have 3 lines of space  
+par(mar=c(.1,4,4,2) + 0.1)  
 
 # Weekdays
 plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="", ylab="Avg. Daily Steps")
