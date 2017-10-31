@@ -1,4 +1,3 @@
-# this is a change
 # script to perform the PA actions
 
 # =======================
@@ -39,7 +38,6 @@ stepsperday <- aggregate(data.proc.complete$steps, by=list(data.proc.complete$da
 names(stepsperday) <- c("date", "steps")
 
 # construct the raw plot
-dev.off()
 plot.new()
 par(bg = "grey")
 hist(stepsperday$steps, breaks=10, main="", xaxt = "n", xlab = "# Of Steps", col = "cornflowerblue")
@@ -259,6 +257,8 @@ text(x=1.05 * themaxpre.wkdys
      , adj = c(0,0)
      , cex=.75)
 text(x=0, y=225, labels="Weekday", cex=1, adj=c(0,0))
+#x1.tmp <- grconvertX(500, to='ndc')
+y1.tmp <- grconvertY(250, to='ndc')
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, type="l", col="brown1")
@@ -266,7 +266,7 @@ lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, t
 
 # Weekends
 plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
-axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+axis(1, at=seq(0, 3500, 100), cex.axis =.65)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkends
@@ -284,4 +284,13 @@ text(x=0, y=225, labels="Weekend", cex=1, adj=c(0,0))
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval.wkends$interval, y=avgstepsperinterval.wkends$expMA, type="l", col="brown1")
 
-mtext("Average Steps/Day, By Time Interval", outer=TRUE, cex=1)
+# sync lines between plots
+par(xpd=NA)
+segments(500, -10, 500, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
+segments(1000, -10, 1000, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
+segments(1500, -10, 1500, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
+segments(2000, -10, 2000, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
+
+# title
+mtext("Weekday vs Weekend: Average Steps/Day, By Time Interval", outer=TRUE, cex=1)
+
