@@ -239,11 +239,11 @@ plot.new()
 layout(matrix(c(1,2), 2, 2, byrow=FALSE), widths=c(1,1), heights=c(4,4))
 par(bg = "grey")
 par(oma=c(3,3,3,3))  # all sides have 3 lines of space  
-par(mar=c(.1,4,4,2) + 0.1)  
+par(mar=c(.1,4,3,2) + 0.1)  
 
 # Weekdays
 plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="", ylab="Avg. Daily Steps")
-#axis(1, at=seq(0, 3500, 100), cex.axis =.75)
+axis(3, at=seq(0, 3500, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkdys, y=themax.wkdys, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkdys
@@ -257,7 +257,6 @@ text(x=1.05 * themaxpre.wkdys
      , adj = c(0,0)
      , cex=.75)
 text(x=0, y=225, labels="Weekday", cex=1, adj=c(0,0))
-#x1.tmp <- grconvertX(500, to='ndc')
 y1.tmp <- grconvertY(250, to='ndc')
 
 # add exponential moving average line for some smoothing visualization
@@ -266,7 +265,7 @@ lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, t
 
 # Weekends
 plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
-axis(1, at=seq(0, 3500, 100), cex.axis =.65)
+axis(1, at=seq(0, 3500, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkends
@@ -286,11 +285,30 @@ lines(x=avgstepsperinterval.wkends$interval, y=avgstepsperinterval.wkends$expMA,
 
 # sync lines between plots
 par(xpd=NA)
-segments(500, -10, 500, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
-segments(1000, -10, 1000, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
-segments(1500, -10, 1500, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
-segments(2000, -10, 2000, .915*grconvertY(y.tmp, from='ndc'), lty='dashed', col='gray65')
+numlines <- 7
+plotwidth <- 2400
+segments(seq(from = plotwidth/(numlines+1)
+             , to = plotwidth-(plotwidth/(numlines+1))
+             , by = plotwidth/(numlines+1))
+         , rep(-10, 4)
+         , seq(from = plotwidth/(numlines+1)
+               , to = plotwidth-(plotwidth/(numlines+1))
+               , by = plotwidth/(numlines+1))
+         , rep(.95*grconvertY(y.tmp, from='ndc'), 4)
+         , lty='dashed'
+         , col='gray65')
+
+# legend
+par(xpd=TRUE)
+legend(800, 325
+       , legend = c("Data", "Smoothed")
+       , col = c("blue", "brown1")
+       , lwd = 2
+       , cex = .75
+       , horiz = TRUE
+)
+par(xpd=NA)
 
 # title
-mtext("Weekday vs Weekend: Average Steps/Day, By Time Interval", outer=TRUE, cex=1)
+mtext("Weekday vs Weekend: Average Steps per Day, By Time Interval", outer=TRUE, cex=1)
 
