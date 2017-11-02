@@ -235,7 +235,6 @@ themaxpre.wkends <- avgstepsperinterval.wkends$interval[avgstepsperinterval.wken
 thesd.wkends <- sd(avgstepsperinterval.wkends$avg_steps)
 
 # construct the plots
-dev.off()
 plot.new()
 layout(matrix(c(1,2), 2, 2, byrow=FALSE), widths=c(1,1), heights=c(4,4))
 par(bg = "grey")
@@ -258,7 +257,7 @@ text(x=1.05 * themaxpre.wkdys
      , adj = c(0,0)
      , cex=.75)
 text(x=0, y=225, labels="Weekday", cex=1, adj=c(0,0))
-y1.tmp <- grconvertY(250, to='ndc')
+y.tmp <- grconvertY(250, to='ndc')
 
 # add exponential moving average line for some smoothing visualization
 lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, type="l", col="brown1")
