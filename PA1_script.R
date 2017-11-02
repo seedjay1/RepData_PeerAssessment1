@@ -76,6 +76,7 @@ thesd <- sd(avgstepsperinterval$avg_steps)
 
 # construct the plot
 plot.new()
+par(bg = "grey")
 plot(avgstepsperinterval$interval, avgstepsperinterval$avg_steps, type="l", col="blue", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
 axis(1, at=seq(0, 3500, 100), cex.axis =.75)
 points(x=themaxpre, y=themax, pch=19, col="forestgreen")
@@ -285,7 +286,7 @@ lines(x=avgstepsperinterval.wkends$interval, y=avgstepsperinterval.wkends$expMA,
 
 # sync lines between plots
 par(xpd=NA)
-numlines <- 7
+numlines <- 11
 plotwidth <- 2400
 segments(seq(from = plotwidth/(numlines+1)
              , to = plotwidth-(plotwidth/(numlines+1))
