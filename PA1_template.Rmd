@@ -1,7 +1,8 @@
 ---
 title: "Reproducible Research: Peer-Assessed Project 1"
 author: "Christopher Jones"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+#date: "`r format(Sys.time(), '%d %B, %Y')`"
+date: "10/30/2017"
 output: 
   html_document:
     echo: true
