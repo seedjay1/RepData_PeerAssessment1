@@ -175,7 +175,7 @@ Instructions:
 >Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-For missing values, we use the mice package, predictive mean matching method (2 data sets, 10 iterations).
+For missing values, we use the predictive mean matching method from the commonly-used mice package (2 data sets, 10 iterations).
 
 First, md.pattern shows us what columns contain missing values:
 
@@ -283,7 +283,9 @@ legend(19000, 18, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed
 box()
 ```
 
-This plot contains 2 parts: a before/after histogram, and before/after linear density plots. Overall the imputation didn't affect the character of the data very much. Most of the new weight was added above the mean/median (they're close together), so the immputed mean/median ticked upwards slightly. And since most of the added weight was near the mean/median, the standard deviation shows a bit of a decrease.
+This plot contains 2 parts: a before/after histogram, and before/after linear density plots along the top and bottom borders. 
+
+Overall the imputation didn't affect the character of the data very much (at least not visible in the histogram). Most of the new weight was added above the mean/median (they're close together), so the immputed mean/median ticked upwards slightly. And since most of the added weight was near the mean/median, the standard deviation shows a bit of a decrease.
 
 
 ### Weekdays vs Weekends {.tabset}
