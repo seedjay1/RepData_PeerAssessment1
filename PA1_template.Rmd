@@ -11,7 +11,7 @@ output:
 #runtime: shiny
 ---
 
-## Activity Data {.tabset}
+## Activity Data Analysis {.tabset}
 
 ### Loading/preprocessing {.tabset}
 
@@ -65,6 +65,8 @@ Instructions:
 >
 >Calculate and report the mean and median total number of steps taken per day
 
+The required information is provided by the plot below, using the complete observations dataset, per the instructions.
+
 ```{r steps_per_day}
 # =================================================
 # What is mean total number of steps taken per day?
@@ -109,7 +111,7 @@ Instructions:
 >
 >Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-In addition to answering the questions given, I've provided a smoothing line.
+In addition to answering the questions given, I've provided a smoothing line. The average daily activty pattern is depicted below. On average, the maximum number of steps occurs at interval 835.
 
 ```{r daily_activity_pattern}
 # ==========================================
@@ -156,7 +158,6 @@ legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "
 ```
 
 
-
 ### Missing values {.tabeset}
 
 Instructions:
@@ -174,7 +175,7 @@ Instructions:
 >Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-For missing values, we use the mice package.
+For missing values, we use the mice package, predictive mean matching method (2 data sets, 10 iterations).
 
 First, md.pattern shows us what columns contain missing values:
 
@@ -282,6 +283,8 @@ legend(19000, 18, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed
 box()
 ```
 
+This plot contains 2 parts: a before/after histogram, and before/after linear density plots. Overall the imputation didn't affect the character of the data very much. Most of the new weight was added above the mean/median (they're close together), so the immputed mean/median ticked upwards slightly. And since most of the added weight was near the mean/median, the standard deviation shows a bit of a decrease.
+
 
 ### Weekdays vs Weekends {.tabset}
 
@@ -292,6 +295,12 @@ Instructions:
 >Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 >
 >Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+We break out weekdays and weekends in the plots below.
+
+While both exhibit early spikes (around intervale 800), the average weekend spike is significantly lower than the weekday spike. Additionally, activity on the weekend is much more uniformly distributed over its support than weekday activity. Finally, the weekends show much more activity in the initial 0-500 intervals than do the weekends.
+
+We hypothesize that these characteristics indicate the difference between work days and non-work days. More exploration would be needed to support/confirm this, first perhaps being verification that the differences noted were not due merely to the addition of imputed values.
 
 ```{r weekdays_weekends}
 # ======================
@@ -308,7 +317,7 @@ weekdays <- c("Mon", "Tue", "Wed", "Thu", "Fri")
 weekends <- c("Sat", "Sun")
 
 # Weekdays data aggregation
-avgstepsperinterval.wkdys <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekdays,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekdays,]$interval), FUN=mean)
+avgstepsperinterval.wkdys <- aggregate(data.proc.imputed[data.proc.imputed$dow %in% weekdays,]$steps, by=list(data.proc.imputed[data.proc.imputed$dow %in% weekdays,]$interval), FUN=mean)
 names(avgstepsperinterval.wkdys) <- c("interval", "avg_steps")
 avgstepsperinterval.wkdys$expMA <- EMA(avgstepsperinterval.wkdys$avg_steps)
 
@@ -318,7 +327,7 @@ themaxpre.wkdys <- avgstepsperinterval.wkdys$interval[avgstepsperinterval.wkdys$
 thesd.wkdys <- sd(avgstepsperinterval.wkdys$avg_steps)
 
 # Weekends data aggregation
-avgstepsperinterval.wkends <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekends,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekends,]$interval), FUN=mean)
+avgstepsperinterval.wkends <- aggregate(data.proc.imputed[data.proc.imputed$dow %in% weekends,]$steps, by=list(data.proc.imputed[data.proc.imputed$dow %in% weekends,]$interval), FUN=mean)
 names(avgstepsperinterval.wkends) <- c("interval", "avg_steps")
 avgstepsperinterval.wkends$expMA <- EMA(avgstepsperinterval.wkends$avg_steps)
 
@@ -336,7 +345,7 @@ par(mar=c(.1,4,3,2) + 0.1)
 
 # Weekdays
 plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="", ylab="Avg. Daily Steps")
-axis(3, at=seq(0, 3500, 100), cex.axis =.60)
+axis(3, at=seq(0, 2400, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkdys, y=themax.wkdys, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkdys
@@ -358,11 +367,11 @@ lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, t
 
 # Weekends
 plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
-axis(1, at=seq(0, 3500, 100), cex.axis =.60)
+axis(1, at=seq(0, 2400, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
-text(x=1.05 * themaxpre.wkends
-     , y=.99 * themax.wkends
+text(x=.75 * themaxpre.wkends
+     , y=1.05 * themax.wkends
      , labels=bquote("maximum: (interval, avg steps) = (" 
                      ~ .(themaxpre.wkends)
                      ~ ", " 
@@ -387,7 +396,7 @@ segments(seq(from = plotwidth/(numlines+1)
          , seq(from = plotwidth/(numlines+1)
                , to = plotwidth-(plotwidth/(numlines+1))
                , by = plotwidth/(numlines+1))
-         , rep(.95*grconvertY(y.tmp, from='ndc'), 4)
+         , rep(1.0*grconvertY(y.tmp, from='ndc'), 4)
          , lty='dashed'
          , col='gray65')
 
@@ -404,6 +413,7 @@ par(xpd=NA)
 
 # title
 mtext("Weekday vs Weekend: Average Steps per Day, By Time Interval", outer=TRUE, cex=1)
+
 ```
 
 fin

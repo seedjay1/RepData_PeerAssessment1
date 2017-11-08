@@ -121,7 +121,7 @@ library(mice)
 #            0        0  0  2304 2304
 
 if(!exists("data.proc.imputed")) {
-  tempData <- mice(data.raw, m=5, maxit=50, meth="pmm", seed=500)
+  tempData <- mice(data.raw, m=2, maxit=10, meth="pmm", seed=500)
   data.proc.imputed <- complete(tempData, 1)
   data.proc.imputed$id <- seq(1:nrow(data.proc.imputed))
   data.proc.imputed$date <- as.Date(data.proc.imputed$date)
@@ -129,7 +129,7 @@ if(!exists("data.proc.imputed")) {
   data.proc.imputed$dow <- as.factor(data.proc.imputed$dow)
 }
 if(nrow(data.proc.imputed) != 17568) {
-  tempData <- mice(data.raw, m=5, maxit=50, meth="pmm", seed=500)
+  tempData <- mice(data.raw, m=2, maxit=10, meth="pmm", seed=500)
   data.proc.imputed <- complete(tempData, 1)
   data.proc.imputed$id <- seq(1:nrow(data.proc.imputed))
   data.proc.imputed$date <- as.Date(data.proc.imputed$date)
@@ -215,7 +215,7 @@ weekdays <- c("Mon", "Tue", "Wed", "Thu", "Fri")
 weekends <- c("Sat", "Sun")
 
 # Weekdays data aggregation
-avgstepsperinterval.wkdys <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekdays,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekdays,]$interval), FUN=mean)
+avgstepsperinterval.wkdys <- aggregate(data.proc.imputed[data.proc.imputed$dow %in% weekdays,]$steps, by=list(data.proc.imputed[data.proc.imputed$dow %in% weekdays,]$interval), FUN=mean)
 names(avgstepsperinterval.wkdys) <- c("interval", "avg_steps")
 avgstepsperinterval.wkdys$expMA <- EMA(avgstepsperinterval.wkdys$avg_steps)
 
@@ -225,7 +225,7 @@ themaxpre.wkdys <- avgstepsperinterval.wkdys$interval[avgstepsperinterval.wkdys$
 thesd.wkdys <- sd(avgstepsperinterval.wkdys$avg_steps)
 
 # Weekends data aggregation
-avgstepsperinterval.wkends <- aggregate(data.proc.complete[data.proc.complete$dow %in% weekends,]$steps, by=list(data.proc.complete[data.proc.complete$dow %in% weekends,]$interval), FUN=mean)
+avgstepsperinterval.wkends <- aggregate(data.proc.imputed[data.proc.imputed$dow %in% weekends,]$steps, by=list(data.proc.imputed[data.proc.imputed$dow %in% weekends,]$interval), FUN=mean)
 names(avgstepsperinterval.wkends) <- c("interval", "avg_steps")
 avgstepsperinterval.wkends$expMA <- EMA(avgstepsperinterval.wkends$avg_steps)
 
@@ -243,7 +243,7 @@ par(mar=c(.1,4,3,2) + 0.1)
 
 # Weekdays
 plot(avgstepsperinterval.wkdys$interval, avgstepsperinterval.wkdys$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="", ylab="Avg. Daily Steps")
-axis(3, at=seq(0, 3500, 100), cex.axis =.60)
+axis(3, at=seq(0, 2400, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkdys, y=themax.wkdys, pch=19, col="forestgreen")
 text(x=1.05 * themaxpre.wkdys
@@ -265,11 +265,11 @@ lines(x=avgstepsperinterval.wkdys$interval, y=avgstepsperinterval.wkdys$expMA, t
 
 # Weekends
 plot(avgstepsperinterval.wkends$interval, avgstepsperinterval.wkends$avg_steps, type="l", ylim=c(0, 250), col="blue", yaxt="n", xaxt = "n", xlab="Interval", ylab="Avg. Daily Steps")
-axis(1, at=seq(0, 3500, 100), cex.axis =.60)
+axis(1, at=seq(0, 2400, 100), cex.axis =.60)
 axis(2, at=seq(0, 250, 50), cex.axis =.75)
 points(x=themaxpre.wkends, y=themax.wkends, pch=19, col="forestgreen")
-text(x=1.05 * themaxpre.wkends
-     , y=.99 * themax.wkends
+text(x=.75 * themaxpre.wkends
+     , y=1.05 * themax.wkends
      , labels=bquote("maximum: (interval, avg steps) = (" 
                      ~ .(themaxpre.wkends)
                      ~ ", " 
@@ -294,7 +294,7 @@ segments(seq(from = plotwidth/(numlines+1)
          , seq(from = plotwidth/(numlines+1)
                , to = plotwidth-(plotwidth/(numlines+1))
                , by = plotwidth/(numlines+1))
-         , rep(.95*grconvertY(y.tmp, from='ndc'), 4)
+         , rep(1.0*grconvertY(y.tmp, from='ndc'), 4)
          , lty='dashed'
          , col='gray65')
 
