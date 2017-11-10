@@ -1,15 +1,6 @@
----
-title: "Reproducible Research: Peer-Assessed Project 1"
-author: "Christopher Jones"
-#date: "`r format(Sys.time(), '%d %B, %Y')`"
-date: "10/30/2017"
-output: 
-  html_document:
-    echo: true
-    code_folding: hide
-    keep_md: true
-#runtime: shiny
----
+# Reproducible Research: Peer-Assessed Project 1
+Christopher Jones  
+10/30/2017  
 
 ## Activity Data Analysis {.tabset}
 
@@ -22,7 +13,8 @@ Loading the data is simple. Light preprocessing is done, performing the followin
 * add a column for day of week
 * create a dataset consisting of only complete observations
 
-```{r data_load}
+
+```r
 # =======================
 # Data load/preprocessing
 # =======================
@@ -50,6 +42,10 @@ data.proc.complete <- data.proc[!is.na(data.proc$steps),]
 message("Data load/preprocessing complete.")
 ```
 
+```
+## Data load/preprocessing complete.
+```
+
 Further processing (aggregations etc.) is performed later, specific to the requirements of each topic.
 
 
@@ -67,7 +63,8 @@ Instructions:
 
 The required information is provided by the plot below, using the complete observations dataset, per the instructions.
 
-```{r steps_per_day}
+
+```r
 # =================================================
 # What is mean total number of steps taken per day?
 # For this part of the assignment, you can ignore the missing values in the dataset.
@@ -100,6 +97,8 @@ mtext(bquote(mu
 box()
 ```
 
+![](PA1_template_files/figure-html/steps_per_day-1.png)<!-- -->
+
 
 ### Daily activity pattern {.tabeset}
 
@@ -113,7 +112,8 @@ Instructions:
 
 In addition to answering the questions given, I've provided a smoothing line. The average daily activty pattern is depicted below. On average, the maximum number of steps occurs at interval 835.
 
-```{r daily_activity_pattern}
+
+```r
 # ==========================================
 # What is the average daily activity pattern?
 # Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
@@ -157,6 +157,8 @@ rect(xleft=0, xright=650, ybottom=170, ytop=205)
 legend(1, 210, legend=c("Data", "Exponential\nRunning Average"), col=c("blue", "brown1"), lty=c(1, 1), cex=0.7, bty="n")
 ```
 
+![](PA1_template_files/figure-html/daily_activity_pattern-1.png)<!-- -->
+
 
 ### Missing values {.tabeset}
 
@@ -179,7 +181,8 @@ For missing values, we use the predictive mean matching method from the commonly
 
 First, md.pattern shows us what columns contain missing values:
 
-```{r missing_values}
+
+```r
 # use the standard package for imputing the missing steps values
 library(lattice)
 library(mice)
@@ -187,9 +190,17 @@ library(mice)
 md.pattern(data.raw)
 ```
 
+```
+##       date interval steps     
+## 15264    1        1     1    0
+##  2304    1        1     0    1
+##          0        0  2304 2304
+```
+
 Finally, we perform the imputation, and produce a before/after comparative visual:
 
-```{r imputed_values}
+
+```r
 # =======================
 # Imputing missing values
 # Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
@@ -210,6 +221,34 @@ if(!exists("data.proc.imputed")) {
   data.proc.imputed$dow <- weekdays(data.proc.imputed$date, abbreviate=TRUE)
   data.proc.imputed$dow <- as.factor(data.proc.imputed$dow)
 }
+```
+
+```
+## 
+##  iter imp variable
+##   1   1  steps
+##   1   2  steps
+##   2   1  steps
+##   2   2  steps
+##   3   1  steps
+##   3   2  steps
+##   4   1  steps
+##   4   2  steps
+##   5   1  steps
+##   5   2  steps
+##   6   1  steps
+##   6   2  steps
+##   7   1  steps
+##   7   2  steps
+##   8   1  steps
+##   8   2  steps
+##   9   1  steps
+##   9   2  steps
+##   10   1  steps
+##   10   2  steps
+```
+
+```r
 if(nrow(data.proc.imputed) != 17568) {
   tempData <- mice(data.raw, m=2, maxit=10, meth="pmm", seed=500)
   data.proc.imputed <- complete(tempData, 1)
@@ -283,6 +322,8 @@ legend(19000, 18, legend=c("Raw", "Imputed", "Both"), col=c(col.raw, col.imputed
 box()
 ```
 
+![](PA1_template_files/figure-html/imputed_values-1.png)<!-- -->
+
 This plot contains 2 parts: a before/after histogram, and before/after linear density plots along the top and bottom borders. 
 
 Overall the imputation didn't affect the character of the data very much (at least not visible in the histogram). Most of the new weight was added above the mean/median (they're close together), so the immputed mean/median ticked upwards slightly. And since most of the added weight was near the mean/median, the standard deviation shows a bit of a decrease.
@@ -304,7 +345,8 @@ While both exhibit early spikes (around intervale 800), the average weekend spik
 
 We hypothesize that these characteristics indicate the difference between work days and non-work days. More exploration would be needed to support/confirm this, first perhaps being verification that the differences noted were not due merely to the addition of imputed values.
 
-```{r weekdays_weekends}
+
+```r
 # ======================
 # Are there differences in activity patterns between weekdays and weekends?
 # For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
@@ -415,7 +457,8 @@ par(xpd=NA)
 
 # title
 mtext("Weekday vs Weekend: Average Steps per Day, By Time Interval", outer=TRUE, cex=1)
-
 ```
+
+![](PA1_template_files/figure-html/weekdays_weekends-1.png)<!-- -->
 
 fin
